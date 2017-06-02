@@ -25,6 +25,7 @@ sbit ECHO_0 = P0 ^ 1;
 sbit ECHO_1 = P0 ^ 3;
 sbit TRIG_0 = P0 ^ 0;
 sbit TRIG_1 = P0 ^ 2;
+sbit MODEL = P0 ^ 4;
 
 /*
 * main.c文件
@@ -51,7 +52,6 @@ unsigned int uiTrig_cnt;
 unsigned int uiSelfStop_cnt;
 bit bCarIsMove = 0;
 char    cBufFromUART;
-char    cModel = '0';   //0 for auto
 
 int main()
 {
@@ -59,28 +59,18 @@ int main()
     Config_Timer0();
     while (1)
     {
-        if (cModel == '0')
+        if (MODEL == 0)
         {
             Motor();
             Decision_Direction();
             Send_Trig();
-            if(cBufFromUART == '1')
-                cModel = '1';
-
         }
-        else if(cModel == '1')
+        else
         {           
             cMotorState = cBufFromUART;
-            if(cMotorState == '0')
-            {
-                cModel = '0';
-                continue;
-            }       
             Motor_SelfStop();
             Send_Trig();
-
         }
-        else continue;
     }
 }
 void Motor_Stop()
@@ -203,20 +193,26 @@ void Ultrasonic()
 
 void Decision_Direction()
 {
-    if (uiEcho0_cnt <= BARRIER && uiEcho1_cnt <= BARRIER&&uiEcho0_cnt&&uiEcho1_cnt)
+    if (uiEcho0_cnt <= BARRIER && 
+		uiEcho1_cnt <= BARRIER&&
+		uiEcho0_cnt&&uiEcho1_cnt)
     {
         cMotorState = 's';
     }
-    else if (uiEcho0_cnt <= BARRIER && uiEcho1_cnt > BARRIER )
+    else if (uiEcho0_cnt <= BARRIER &&
+		uiEcho1_cnt > BARRIER )
     {
          cMotorState = 'a';
-    }else if (  uiEcho0_cnt > BARRIER && uiEcho1_cnt <= BARRIER)
+    }else if (  uiEcho0_cnt > BARRIER && 
+		uiEcho1_cnt <= BARRIER)
     {
          cMotorState = 'd';
     }
-    else if  (uiEcho0_cnt > BARRIER && uiEcho1_cnt > BARRIER)   
+    else if  (uiEcho0_cnt > BARRIER &&
+		uiEcho1_cnt > BARRIER)   
         cMotorState = 'w';
-    else  if(uiEcho0_cnt >= uiEcho1_cnt) cMotorState = 'd';
+    else  if(uiEcho0_cnt > uiEcho1_cnt)
+		cMotorState = 'd';
     else   cMotorState = 'a';
 }
 
@@ -245,7 +241,7 @@ void Interrupt_UART()   interrupt   4
     if (RI)
     {
         RI = 0;
-        cBufFromUART = SBUF;
+         cBufFromUART = SBUF;
         //SBUF = cMotorState;
     }
     if (TI)
@@ -266,7 +262,6 @@ void Interrupt_Timer0() interrupt 1
             uiEcho0_cnt = 0;
         }
     }
-
     if (ECHO_1)
     {
         if (++uiEcho1_cnt >= 65500)
@@ -277,9 +272,7 @@ void Interrupt_Timer0() interrupt 1
     Ultrasonic();
     if (++uiSelfStop_cnt>=5000 &&bCarIsMove )
     {
-            //Motor_Stop();
         TR1 = 0;
-        //cBufFromUART = 'e';
         Motor_Stop();
         cBufFromUART = ' '; 
         bCarIsMove = 0;
