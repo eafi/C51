@@ -1,23 +1,20 @@
+#define CON_DEBUG
+#ifdef PHY_DEBUG
+/*
+sperate from c51
+*/
+#include "reg.h"
+#endif
 
-#include <reg52.h>
-
-#define LCD1602_DB  P0
-sbit LCD1602_RS = P1^0;
-sbit LCD1602_RW = P1^1;
-sbit LCD1602_E  = P1^5;
 #define INTEGRITY_EXP   11      //0x0000 0x0 0x0000 $ \0
 #define VALUE_EXP       5
 #define RESULT_EXP      (VALUE_EXP+1)		   
-
-
-
-
-char Integrity_exp[INTEGRITY_EXP] = {"3E-1234#"};
+char Integrity_exp[INTEGRITY_EXP] = {"3E+1234#"};
 char Left_value[VALUE_EXP] = {0,};
 char Right_value[VALUE_EXP] = {0,};
 char Result[RESULT_EXP] = {0,};
 char Output[RESULT_EXP] = {0,};
-
+int Hex_map[4] = {1,16,256,4096};
 struct Op_type
 {
     char type;
@@ -34,20 +31,38 @@ char* process_express();
 char* hex_add_hex(char *exp,char s_pos,char e_pos);
 char* hex_minus_hex(char *exp,char s_pos,char e_pos);
 char* reverse_negative(char* exp,char len);
-void reverse_answer();
-void InitLcd1602();
-void LcdShowStr(unsigned char x, unsigned char y, unsigned char *str);
+void reverse_answer(char* exp);
+
+#ifdef CON_DEBUG
+#include <iostream>
+using namespace std;
+
+void print_op(char* str,int sz)
+{
+    char *tmp = str;
+    cout<<op_type.type<<" "<<(int)op_type.s_pos<<" "<<(int)op_type.e_pos<<endl;
+    int i = 0;
+    while(sz)
+    {
+        cout<<*tmp++;
+        --sz;
+    }cout<<endl;
+}
+#endif
+
+
+
 int main()
 {
-    unsigned char str[] = "aaaa";
-
-    InitLcd1602();
-    LcdShowStr(0, 0, Integrity_exp);
+    //InitLcd1602();
+    //LcdShowStr(0, 0, Integrity_exp);
+    print_op(Integrity_exp,sizeof(Integrity_exp)/sizeof(char));
 	find_operator();
 	process_express();
-   	reverse_answer();
-    LcdShowStr(0, 1, Result+1);
-    while (1);
+    print_op(Result,sizeof(Integrity_exp)/sizeof(char));
+    //LcdShowStr(0, 1, Result+1);
+    //while (1);
+    return 0;
 }
 
 /*
@@ -135,11 +150,17 @@ char* hex_add_hex(char *exp,char s_pos,char e_pos)
         --i;--j;
         if(++res_count >= RESULT_EXP)
             return error_overflow;
-    }
+        }
+        reverse_answer(Result);
     return Result;
        
 }
 
+/*
+* minus as postive numbers
+* tip negative flag if <0
+* process negative
+*/
 char* hex_minus_hex(char *exp,char s_pos,char e_pos)
 {    char carry = 0,i = 0,j = s_pos + 1,little = 0,big = 0;
     char lDelta = s_pos - i,rDelta = e_pos - s_pos - 1;
@@ -184,99 +205,49 @@ char* hex_minus_hex(char *exp,char s_pos,char e_pos)
             carry = -1;
             res += 16;
         }else carry = 0;
-        Result[i++] = res >= 10?res+55:res+48; 
+        //Result[i++] = res >= 10?res+55:res+48; 
+        Result[i++] = res;
         --big;--little;
         --lDelta;
         if(--res_count < 0)
             return error_overflow;
-        }
-        
-        if(negative)
+    }
+    
+    if(negative)
+    {
+        int tmp = 0; j = 0;
+        for(;j<i;++j)
         {
-            return reverse_negative(Result,i);
+            tmp -= Hex_map[j]*Result[j];
         }
+        tmp +=65536;
+        /*
+        c51 int - 16 bits
+
+        */
+        for(j=0;j<i;++j)
+        {
+            res = tmp / Hex_map[i-j-1];
+            tmp = tmp % Hex_map[i-j-1];
+            Result[j] = res >= 10?res+55:res+48;//map from absolute number to ASCII
+        }
+    }
     return Result;
 }
 
-char* reverse_negative(char* exp,char len)
-{
-	int i = len;
-	return exp;
-}
 
-void reverse_answer()
+void reverse_answer(char* exp)
 {
 	char i = 0,tmp = 0,len=0;
-	while(Result[len] != 0)
+	while(exp[len+1] != 0)
 	{
 		++len;
 	}
 	for (; i < len / 2; ++i)
 	{
-		tmp = Result[i];
-		Result[i] = Result[len - i];
-		Result[len - i] = tmp;
+		tmp = exp[i];
+		exp[i] = exp[len - i];
+		exp[len - i] = tmp;
 	}
 }
 
-void LcdWaitReady()
-{
-    unsigned char sta;
-    
-    LCD1602_DB = 0xFF;
-    LCD1602_RS = 0;
-    LCD1602_RW = 1;
-    do {
-        LCD1602_E = 1;
-        sta = LCD1602_DB; //读取状态字
-        LCD1602_E = 0;
-    } while (sta & 0x80); //bit7等于1表示液晶正忙，重复检测直到其等于0为止
-}
-
-void LcdWriteCmd(unsigned char cmd)
-{
-    LcdWaitReady();
-    LCD1602_RS = 0;
-    LCD1602_RW = 0;
-    LCD1602_DB = cmd;
-    LCD1602_E  = 1;
-    LCD1602_E  = 0;
-}
-
-void LcdWriteDat(unsigned char dat)
-{
-    LcdWaitReady();
-    LCD1602_RS = 1;
-    LCD1602_RW = 0;
-    LCD1602_DB = dat;
-    LCD1602_E  = 1;
-    LCD1602_E  = 0;
-}
-
-void LcdSetCursor(unsigned char x, unsigned char y)
-{
-    unsigned char addr;
-    
-    if (y == 0)  //由输入的屏幕坐标计算显示RAM的地址
-        addr = 0x00 + x;  //第一行字符地址从0x00起始
-    else
-        addr = 0x40 + x;  //第二行字符地址从0x40起始
-    LcdWriteCmd(addr | 0x80);  //设置RAM地址
-}
-
-void LcdShowStr(unsigned char x, unsigned char y, unsigned char *str)
-{
-    LcdSetCursor(x, y);   //设置起始地址
-    while (*str != '\0')  //连续写入字符串数据，直到检测到结束符
-    {
-        LcdWriteDat(*str++);  //先取str指向的数据，然后str自加1
-    }
-}
-
-void InitLcd1602()
-{
-    LcdWriteCmd(0x38);  //16*2显示，5*7点阵，8位数据接口
-    LcdWriteCmd(0x0C);  //显示器开，光标关闭
-    LcdWriteCmd(0x06);  //文字不动，地址自动+1
-    LcdWriteCmd(0x01);  //清屏
-}
