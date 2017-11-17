@@ -1,20 +1,13 @@
-#define CON_DEBUG
-#ifdef PHY_DEBUG
+
 /*
 sperate from c51
 */
 #include "reg.h"
-#endif
 
-#define INTEGRITY_EXP   11      //0x0000 0x0 0x0000 $ \0
-#define VALUE_EXP       5
-#define RESULT_EXP      (VALUE_EXP+1)		   
-char Integrity_exp[INTEGRITY_EXP] = {"3E+1234#"};
-char Left_value[VALUE_EXP] = {0,};
-char Right_value[VALUE_EXP] = {0,};
+
+char Integrity_exp[INTEGRITY_EXP] = {0,};
 char Result[RESULT_EXP] = {0,};
-char Output[RESULT_EXP] = {0,};
-int Hex_map[4] = {1,16,256,4096};
+int idata Hex_map[4] = {1,16,256,4096};
 struct Op_type
 {
     char type;
@@ -22,48 +15,6 @@ struct Op_type
     char e_pos;
 }op_type;
 
-char error_overflow[] = {"overflow!"};
-char error_invalid[] = {"exp invalid!"};
-
-
-void find_operator();
-char* process_express();
-char* hex_add_hex(char *exp,char s_pos,char e_pos);
-char* hex_minus_hex(char *exp,char s_pos,char e_pos);
-char* reverse_negative(char* exp,char len);
-void reverse_answer(char* exp);
-
-#ifdef CON_DEBUG
-#include <iostream>
-using namespace std;
-
-void print_op(char* str,int sz)
-{
-    char *tmp = str;
-    cout<<op_type.type<<" "<<(int)op_type.s_pos<<" "<<(int)op_type.e_pos<<endl;
-    int i = 0;
-    while(sz)
-    {
-        cout<<*tmp++;
-        --sz;
-    }cout<<endl;
-}
-#endif
-
-
-
-int main()
-{
-    //InitLcd1602();
-    //LcdShowStr(0, 0, Integrity_exp);
-    print_op(Integrity_exp,sizeof(Integrity_exp)/sizeof(char));
-	find_operator();
-	process_express();
-    print_op(Result,sizeof(Integrity_exp)/sizeof(char));
-    //LcdShowStr(0, 1, Result+1);
-    //while (1);
-    return 0;
-}
 
 /*
 __fun__ find_operator() will catch first '+' or '-' operator and the '#' 
@@ -109,7 +60,7 @@ void find_operator()
     }
 }
 
-char* process_express()
+char process_express()
 {
     char op = op_type.type;
     switch(op)
@@ -124,14 +75,14 @@ char* process_express()
         default :
         break;
     }
-	return error_invalid; 
+	return ERROR_INVALID; 
 }
 
 /*
 pos may be 0 , like " 2020" "+2020"
 
 */
-char* hex_add_hex(char *exp,char s_pos,char e_pos)
+char hex_add_hex(char *exp,char s_pos,char e_pos)
 {
     char carry = 0,i = s_pos-1,j = e_pos - 1;
     char x = 0,y = 0,res = 0,res_count = 0;
@@ -149,10 +100,10 @@ char* hex_add_hex(char *exp,char s_pos,char e_pos)
         Result[res_count] = res >= 10?res+55:res+48; 
         --i;--j;
         if(++res_count >= RESULT_EXP)
-            return error_overflow;
+            return ERROR_OVERFLOW;
         }
         reverse_answer(Result);
-    return Result;
+    return VALID;
        
 }
 
@@ -161,7 +112,7 @@ char* hex_add_hex(char *exp,char s_pos,char e_pos)
 * tip negative flag if <0
 * process negative
 */
-char* hex_minus_hex(char *exp,char s_pos,char e_pos)
+char hex_minus_hex(char *exp,char s_pos,char e_pos)
 {    char carry = 0,i = 0,j = s_pos + 1,little = 0,big = 0;
     char lDelta = s_pos - i,rDelta = e_pos - s_pos - 1;
     char negative = 0;
@@ -210,7 +161,7 @@ char* hex_minus_hex(char *exp,char s_pos,char e_pos)
         --big;--little;
         --lDelta;
         if(--res_count < 0)
-            return error_overflow;
+            return ERROR_OVERFLOW;
     }
     
     if(negative)
@@ -232,7 +183,14 @@ char* hex_minus_hex(char *exp,char s_pos,char e_pos)
             Result[j] = res >= 10?res+55:res+48;//map from absolute number to ASCII
         }
     }
-    return Result;
+    else
+    {
+         for(j=0;j<i;++j)
+        {
+            Result[j] = res >= 10?res+55:res+48;//map from absolute number to ASCII
+        }  
+    }
+    return VALID;
 }
 
 

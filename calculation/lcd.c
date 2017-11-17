@@ -1,9 +1,13 @@
-#include "reg.h"
+#include <reg52.h>
+sbit LCD1602_RS = P1^0;
+sbit LCD1602_RW = P1^1;
+sbit LCD1602_E  = P1^2;
+#define LCD1602_DB  P3
 void LcdWaitReady()
 {
     unsigned char sta;
     
-    LCD1602_DB = 0xFF;
+    LCD1602_DB = 0xff;
     LCD1602_RS = 0;
     LCD1602_RW = 1;
     do {
@@ -60,3 +64,5 @@ void InitLcd1602()
     LcdWriteCmd(0x06);  //���ֲ�������ַ�Զ�+1
     LcdWriteCmd(0x01);  //����
 }
+
+

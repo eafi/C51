@@ -4,3 +4,12 @@
 
 *.json
 *.exe
+*.LST
+*.bak
+*.hex
+*.lnp
+*.M51
+*.ONJ
+*.plg
+*.uvopt
+*.uvproj
