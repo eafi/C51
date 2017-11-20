@@ -1,20 +1,21 @@
-#include <reg52.h>
+#include "reg.h"
+#define LCD1602_DB  P0
+
 sbit LCD1602_RS = P1^0;
 sbit LCD1602_RW = P1^1;
 sbit LCD1602_E  = P1^2;
-#define LCD1602_DB  P3
 void LcdWaitReady()
 {
     unsigned char sta;
     
-    LCD1602_DB = 0xff;
+    LCD1602_DB = 0xFF;
     LCD1602_RS = 0;
     LCD1602_RW = 1;
     do {
         LCD1602_E = 1;
-        sta = LCD1602_DB; //ï¿½ï¿½È¡×´Ì¬ï¿½ï¿½
+        sta = LCD1602_DB; //¶ÁÈ¡×´Ì¬×Ö
         LCD1602_E = 0;
-    } while (sta & 0x80); //bit7ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½Ê¾Òºï¿½ï¿½ï¿½ï¿½Ã¦ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0ÎªÖ¹
+    } while (sta & 0x80); //bit7µÈÓÚ1±íÊ¾Òº¾§ÕýÃ¦£¬ÖØ¸´¼ì²âÖ±µ½ÆäµÈÓÚ0ÎªÖ¹
 }
 
 void LcdWriteCmd(unsigned char cmd)
@@ -41,28 +42,26 @@ void LcdSetCursor(unsigned char x, unsigned char y)
 {
     unsigned char addr;
     
-    if (y == 0)  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾RAMï¿½Äµï¿½Ö·
-        addr = 0x00 + x;  //ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½Ö·ï¿½ï¿½0x00ï¿½ï¿½Ê¼
+    if (y == 0)  //ÓÉÊäÈëµÄÆÁÄ»×ø±ê¼ÆËãÏÔÊ¾RAMµÄµØÖ·
+        addr = 0x00 + x;  //µÚÒ»ÐÐ×Ö·ûµØÖ·´Ó0x00ÆðÊ¼
     else
-        addr = 0x40 + x;  //ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½Ö·ï¿½ï¿½0x40ï¿½ï¿½Ê¼
-    LcdWriteCmd(addr | 0x80);  //ï¿½ï¿½ï¿½ï¿½RAMï¿½ï¿½Ö·
+        addr = 0x40 + x;  //µÚ¶þÐÐ×Ö·ûµØÖ·´Ó0x40ÆðÊ¼
+    LcdWriteCmd(addr | 0x80);  //ÉèÖÃRAMµØÖ·
 }
 
 void LcdShowStr(unsigned char x, unsigned char y, unsigned char *str)
 {
-    LcdSetCursor(x, y);   //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½Ö·
-    while (*str != '\0')  //ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½Ö±ï¿½ï¿½ï¿½ï¿½âµ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    LcdSetCursor(x, y);   //ÉèÖÃÆðÊ¼µØÖ·
+    while (*str != '\0')  //Á¬ÐøÐ´Èë×Ö·û´®Êý¾Ý£¬Ö±µ½¼ì²âµ½½áÊø·û
     {
-        LcdWriteDat(*str++);  //ï¿½ï¿½È¡strÖ¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½È»ï¿½ï¿½strï¿½Ô¼ï¿½1
+        LcdWriteDat(*str++);  //ÏÈÈ¡strÖ¸ÏòµÄÊý¾Ý£¬È»ºóstr×Ô¼Ó1
     }
 }
 
 void InitLcd1602()
 {
-    LcdWriteCmd(0x38);  //16*2ï¿½ï¿½Ê¾ï¿½ï¿½5*7ï¿½ï¿½ï¿½ï¿½8Î»ï¿½ï¿½ï¿½Ý½Ó¿ï¿½
-    LcdWriteCmd(0x0C);  //ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø±ï¿½
-    LcdWriteCmd(0x06);  //ï¿½ï¿½ï¿½Ö²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½Ô¶ï¿½+1
-    LcdWriteCmd(0x01);  //ï¿½ï¿½ï¿½ï¿½
+    LcdWriteCmd(0x38);  //16*2ÏÔÊ¾£¬5*7µãÕó£¬8Î»Êý¾Ý½Ó¿Ú
+    LcdWriteCmd(0x0C);  //ÏÔÊ¾Æ÷¿ª£¬¹â±ê¹Ø±Õ
+    LcdWriteCmd(0x06);  //ÎÄ×Ö²»¶¯£¬µØÖ·×Ô¶¯+1
+    LcdWriteCmd(0x01);  //ÇåÆÁ
 }
-
-

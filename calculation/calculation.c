@@ -4,10 +4,12 @@ sperate from c51
 */
 #include "reg.h"
 
-
+char hex_add_hex(char *exp,char s_pos,char e_pos);
+char hex_minus_hex(char *exp,char s_pos,char e_pos);
+void reverse_answer(char* exp);
 char Integrity_exp[INTEGRITY_EXP] = {0,};
 char Result[RESULT_EXP] = {0,};
-int idata Hex_map[4] = {1,16,256,4096};
+int code Hex_map[4] = {1,16,256,4096};
 struct Op_type
 {
     char type;
@@ -54,10 +56,11 @@ void find_operator()
         ++i;
     }
     op_type.s_pos = j;
-    if(error > 1)
+    if(error > 1 || !op_type.type)
     {
         op_type.type = '$';
     }
+
 }
 
 char process_express()
@@ -102,6 +105,9 @@ char hex_add_hex(char *exp,char s_pos,char e_pos)
         if(++res_count >= RESULT_EXP)
             return ERROR_OVERFLOW;
         }
+
+		if(carry)
+			Result[res_count] = 49;
         reverse_answer(Result);
     return VALID;
        
@@ -113,7 +119,7 @@ char hex_add_hex(char *exp,char s_pos,char e_pos)
 * process negative
 */
 char hex_minus_hex(char *exp,char s_pos,char e_pos)
-{    char carry = 0,i = 0,j = s_pos + 1,little = 0,big = 0;
+{    char carry = 0,i = 0,j = s_pos + 1,little = 0,big = 0;int mov;unsigned int t = 0;
     char lDelta = s_pos - i,rDelta = e_pos - s_pos - 1;
     char negative = 0;
     char x = 0,y = 0,res = 0,res_count = lDelta;
@@ -154,6 +160,7 @@ char hex_minus_hex(char *exp,char s_pos,char e_pos)
         if(res < 0)
         {
             carry = -1;
+			--res_count;
             res += 16;
         }else carry = 0;
         //Result[i++] = res >= 10?res+55:res+48; 
@@ -176,20 +183,34 @@ char hex_minus_hex(char *exp,char s_pos,char e_pos)
         c51 int - 16 bits
 
         */
-        for(j=0;j<i;++j)
+        //res = tmp;
+        mov = 0x000f;
+        for(j=0;j<RESULT_EXP;++j)
         {
-            res = tmp / Hex_map[i-j-1];
-            tmp = tmp % Hex_map[i-j-1];
-            Result[j] = res >= 10?res+55:res+48;//map from absolute number to ASCII
+            t = mov & tmp;
+            t = t >> (4*j);
+			//if(t>=15)
+			//	Result[j] = 70;
+			//else
+            Result[j] = t >= 10?t+55:t+48;
+            mov = mov<<4;
+			if(t == 0)
+			{
+				Result[j] = '\0';
+				break;
+			}
+			
         }
+
     }
     else
     {
          for(j=0;j<i;++j)
         {
-            Result[j] = res >= 10?res+55:res+48;//map from absolute number to ASCII
+            Result[j] = Result[j] >= 10?Result[j]+55:Result[j]+48;//map from absolute number to ASCII
         }  
     }
+	reverse_answer(Result);
     return VALID;
 }
 
@@ -197,15 +218,15 @@ char hex_minus_hex(char *exp,char s_pos,char e_pos)
 void reverse_answer(char* exp)
 {
 	char i = 0,tmp = 0,len=0;
-	while(exp[len+1] != 0)
+	while(exp[len] != '\0')
 	{
 		++len;
 	}
 	for (; i < len / 2; ++i)
 	{
 		tmp = exp[i];
-		exp[i] = exp[len - i];
-		exp[len - i] = tmp;
+		exp[i] = exp[len - i-1];
+		exp[len - i -1] = tmp;
 	}
 }
 

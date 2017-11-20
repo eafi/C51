@@ -9,7 +9,7 @@
 *.hex
 *.lnp
 *.M51
-*.ONJ
+*.OBJ
 *.plg
 *.uvopt
 *.uvproj
