@@ -126,10 +126,9 @@ void interupt_button3() interrupt 3
 	
 
 	static unsigned char keyout = 0; //矩阵按键扫描输出索引
-	TH0 = 0xFC; //重新加载初值
-	TL0 = 0x67;
-	++frame_lock;
-	if(!KEY_IN_1)
+	//TH1 = 0xFC; //重新加载初值
+	//TL = 0x67;
+ 	if(!KEY_IN_1)
 		{
 			pos.x = keyout+1;
 			pos.y = 1;

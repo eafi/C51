@@ -33,7 +33,6 @@ extern void find_operator();
 extern char process_express();
 
 extern void game_main();
-extern char frame_lock;
 extern char Integrity_exp[INTEGRITY_EXP];
 extern char Result[RESULT_EXP];
 typedef struct POS_TYPE

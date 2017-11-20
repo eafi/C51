@@ -8,26 +8,20 @@ void delay_ms(unsigned int ms)
 }
 int main()
 {
-	char x;	
 	InitLcd1602();
 
 //	LcdShowStr(0,0,"asdyhtytuytd");
 	process_button();
-	LcdWriteCmd(0x01);
-	LcdShowStr(0,0,"woo,bug.....");
-	LcdShowStr(0,1,"u did sth wrong.");
-	delay_ms(1000);
+//	LcdWriteCmd(0x01);
+//	LcdShowStr(0,0,"woo,bug.....");
+//	LcdShowStr(0,1,"u did sth wrong.");
+//	delay_ms(1000);
  
-	LcdWriteCmd(0x01);
-	LcdShowStr(0,0,"welcm to real");
-	LcdShowStr(0,1,"press '0 || 1'");
-	while(1)
-	{
-		x = Button_Map[pos.x-1][pos.y-1];
-		if( x == '0'|| x == '1')
-			return;
-	}
-	LcdWriteCmd(0x01);
+//	LcdWriteCmd(0x01);
+//	LcdShowStr(0,0,"welcm to real");
+//	LcdShowStr(0,1,"press '0 || 1'");
+//	delay_ms(1000);
+//	LcdWriteCmd(0x01);
 	game_main();
 //	game_main();
 	while(1);			
