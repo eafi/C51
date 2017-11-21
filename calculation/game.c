@@ -5,7 +5,10 @@
 unsigned int frame_lock = 300;
 unsigned int frame = 0;
 unsigned int seed = 0;
-
+char game_state = 1;		
+/*
+	0	die
+*/
 void draw_frame();
 void init_game();
 void process();
@@ -20,7 +23,7 @@ Enemy enemy[ENEMY_NUM];
 
 char raw_up[SCREEN]= {0,};
 char raw_down[SCREEN]= {0,};
-
+char *game_over = "game over ;)";
 
 
 
@@ -39,7 +42,18 @@ void game_main()
 			//LcdShowStr(0,1,"fghfh");
 			
 			process();
-			draw_frame();	
+			collison();
+			//selecting 
+			switch(game_state)
+			{
+			 	case 0:
+					LcdShowStr(0,1,game_over);		
+				break;
+				case 1:
+					draw_frame();	
+				break;
+			}
+				
 			while(frame < frame_lock);
 			LcdWriteCmd(0x01);
 			
@@ -47,9 +61,29 @@ void game_main()
 
 }
 
+void collison()
+{
+		char i;
+		if(player)
+			{
+				if(raw_down[1] == 35)
+					game_state = 0;		
+			}
+		else
+			{
+				if(raw_up[1] == 35)
+				    game_state = 0;
+			} 
+//	for(i = 0;i<ENEMY_NUM;++i)
+//	{	
+//		if(enemy[i].x == 0 && enemy[i].y == player)
+	//			game_state = 0;			
+	//}
+}		 
 void process()
 {
 	char i;
+	char x;
 	for(i=0;i<ENEMY_NUM;++i)
 	{
 		if(enemy[i].x < 0)
@@ -63,8 +97,15 @@ void process()
 			--enemy[i].x;
 		}
 	}
-	
-		
+	//player button detecting
+	x = Button_Map[pos.x-1][pos.y-1];
+	if(x == '0')
+	{
+		player = 1;
+	}else if(x == '1')
+	{
+		player = 0;
+	}	
 }
 
 void draw_frame()
@@ -82,10 +123,17 @@ void draw_frame()
 			raw_up[enemy[i].x] = 35;
 		}else
 			raw_down[enemy[i].x] = 35;
-		if(player)
-			raw_down[0] = 120;
-		else raw_up[0] = 120;
+		
+
 	}
+	if(player)
+	{
+		raw_down[0] = 120;	
+	}
+	else
+	{
+		raw_up[0] = 120;
+	} 
 	LcdShowStr(0,0,raw_up);
 	LcdShowStr(0,1,raw_down);
 }
@@ -93,11 +141,11 @@ void draw_frame()
 void init_game()
 {
 
-	enemy[0].x = 3;
+	enemy[0].x = 6;
 	enemy[0].y = 0;
-	enemy[1].x = 4;
+	enemy[1].x = 8;
 	enemy[1].y = 1;
-	enemy[2].x = 6;
+	enemy[2].x = 11;
 	enemy[2].y = 0;
 }
 
