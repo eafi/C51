@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #define ENEMY_NUM	3
 #define SCREEN	16
-unsigned int frame_lock = 300;
+unsigned int frame_lock = 330;
 unsigned int frame = 0;
 unsigned int seed = 0;
 char game_state = 1;		
@@ -29,12 +29,12 @@ char *game_over = "game over ;)";
 
 void game_main()
 {
-	TMOD = 0x11; //设置 T0 为模式 1
+	TMOD = 0x11;
 	EA = 1;
-	TH0 = 0xFC; //为 T0 赋初值 0xFC67，定时 1ms
+	TH0 = 0xFC; 
     TL0 = 0x67;
-    ET0 = 1; //使能 T0 中断
-    TR0 = 1; //启动 T0
+    ET0 = 1; 
+    TR0 = 1; 
 	init_game();
 	while(1)
 	{
@@ -151,7 +151,7 @@ void init_game()
 
 void interupt_button1() interrupt 1
 {
-	TH0 = 0xFC; //���¼��س�ֵ
+	TH0 = 0xFC; //���¼��س�ֵ
 	TL0 = 0x67;
 	++frame;
 	++seed;

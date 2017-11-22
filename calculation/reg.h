@@ -2,7 +2,7 @@
 #define REG
 #include <reg52.h>
 #define INTEGRITY_EXP 11
-#define RESULT_EXP 6
+#define RESULT_EXP 5
 #define VALID		0
 #define ERROR_INVALID	1
 #define ERROR_OVERFLOW	2

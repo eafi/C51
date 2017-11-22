@@ -78,6 +78,7 @@ char process_express()
         default :
         break;
     }
+    Result[RESULT_EXP-1] = '\0';
 	return ERROR_INVALID; 
 }
 
@@ -189,17 +190,8 @@ char hex_minus_hex(char *exp,char s_pos,char e_pos)
         {
             t = mov & tmp;
             t = t >> (4*j);
-			//if(t>=15)
-			//	Result[j] = 70;
-			//else
             Result[j] = t >= 10?t+55:t+48;
             mov = mov<<4;
-			if(t == 0)
-			{
-				Result[j] = '\0';
-				break;
-			}
-			
         }
 
     }
